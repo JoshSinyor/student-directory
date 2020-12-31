@@ -1,6 +1,6 @@
-# This directory contains an array of Villains' Academy's students.
+# This array contains Villains' Academy's students.
 
-students = [
+students_array = [
   "Dr. Hannibal Lecter",
   "Darth Vader",
   "Nurse Ratched",
@@ -14,10 +14,23 @@ students = [
   "Norman Bates",
 ]
 
-# This section prints the list of students, and a headcount.
+# These methods print the student list.
 
-students.each do |student|
-  puts student
+def print_header
+  puts "The students of Villains' Academy"
+  puts "-------------"
 end
 
-puts "In total, we have #{students.count} great students."
+def print(array)
+  array.each do |element|
+    puts element
+  end
+end
+
+def print_footer(array)
+  puts "In total, we have #{array.count} great students."
+end
+
+print_header
+print(students_array)
+print_footer(students_array)
