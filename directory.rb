@@ -22,6 +22,4 @@ student_count = 11
 
 # Then we print the total number of students.
 
-print "In total, we have "
-print student_count
-puts " great students."
+puts "In total, we have #{student_count} great students."
