@@ -22,7 +22,7 @@ end
 def print_menu
   puts "1. Input a new student."
   puts "2. Show all students."
-  puts "3."
+  puts "3. Save the list to students.csv."
   puts "4."
   puts "5."
   puts "6."
@@ -40,6 +40,7 @@ def process(selection)
     print_students
     print_footer
   when "3"
+    save_students
   when "4"
   when "5"
   when "6"
@@ -122,6 +123,18 @@ def input_students
       break
     end
   end
+end
+
+def save_students
+  file = File.open("students.csv", "w")
+
+  @students.each do |student|
+    student_data = [student[:first_name], student[:last_name], student[:cohort], student[:colour]]
+    csv_line = student_data.join(",")
+    file.puts csv_line
+  end
+
+  file.close
 end
 
 interactive_menu
