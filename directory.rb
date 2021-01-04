@@ -1,16 +1,16 @@
 @students = [
-  {first_name: "Hannibal", last_name: "Lecter", cohort: :january, colour: "red"},
-  {first_name: "Anakin", last_name: "Skywalker", cohort: :november, colour: "orange"},
-  {first_name: "Mildred", last_name: "Ratched", cohort: :november, colour: "yellow"},
-  {first_name: "Michael", last_name: "Corleone", cohort: :january, colour: "green"},
-  {first_name: "Alex", last_name: "DeLarge", cohort: :november, colour: "blue"},
-  {first_name: "The", last_name: "Wicked Witch of the West", cohort: :november, colour: "purple"},
-  {first_name: "The", last_name: "Terminator", cohort: :november, colour: "red"},
-  {first_name: "Freddy", last_name: "Krueger", cohort: :january, colour: "green"},
-  {first_name: "The", last_name: "Joker", cohort: :november, colour: "blue"},
-  {first_name: "Joffrey", last_name: "Baratheon", cohort: :november, colour: "yellow"},
-  {first_name: "Norman", last_name: "Bates", cohort: :november, colour: "orange"},
 ]
+
+def load_students
+  file = File.open("students.csv", "r")
+
+  file.readlines.each do |line|
+    first_name, last_name, cohort, colour = line.chomp.split(',')
+      @students << {first_name: first_name, last_name: last_name, cohort: cohort.to_sym, colour: colour}
+  end
+
+  file.close
+end
 
 def interactive_menu
   loop do
@@ -19,38 +19,41 @@ def interactive_menu
   end
 end
 
+def print_welcome
+  puts "Welcome to the Villains' Academy student database. How would you like to proceed?"
+end
+
 def print_menu
-  puts "1. Input a new student."
-  puts "2. Show all students."
-  puts "3. Save the list to students.csv."
-  puts "4."
-  puts "5."
-  puts "6."
-  puts "7."
-  puts "8."
+  puts
+  puts "Main Menu:"
+  puts "1. Show all students."
+  puts "2. Add a new student."
+  puts "3. Delete an existing student."
+  puts "7. Save changes."
+  puts "8. Reload last save."
   puts "9. Exit."
 end
 
 def process(selection)
   case selection
   when "1"
-    input_students
-  when "2"
     print_header
     print_students
     print_footer
+  when "2"
+    input_students
   when "3"
-    save_students
-  when "4"
-  when "5"
-  when "6"
+    delete_students
   when "7"
+    save_students
   when "8"
+    reload_students
   when "9"
-    exit
+    exit_program
+  else
+    puts "","Please re-enter your selection."
   end
 end
-
 
 def print_header
   puts
@@ -59,8 +62,6 @@ def print_header
 end
 
 def print_students
-  @students.sort_by! { |student| student[:last_name] }
-
   @students.each_with_index do |student, index|
    puts "#{index + 1} #{student[:first_name]} #{student[:last_name]} (#{student[:cohort].capitalize} cohort)"
   end
@@ -71,11 +72,11 @@ def print_footer
 
   case @students.count
   when 0
-    puts "We have no students.",""
+    puts "","We have no students."
   when 1
-    puts "#{footer}.",""
+    puts "","#{footer}."
   else
-    puts "#{footer}s.",""
+    puts "","#{footer}s."
   end
 end
 
@@ -103,11 +104,11 @@ def input_students
 
     while true do
       puts "Please enter the student's favourite colour."
-      colour = gets.chomp.capitalize
+      colour = gets.chomp.downcase
       break if !colour.empty?
     end
 
-    puts "","Your student's details are:","Name: #{first_name} #{last_name}","Cohort: #{cohort.capitalize}","Favourite Colour: #{colour}","","Are you happy with these details? [Y/N]"
+    puts "","Your student's details are:","Name: #{first_name} #{last_name}","Cohort: #{cohort.capitalize}","Favourite Colour: #{colour.capitalize}","","Are you happy with these details? [Y/N]"
 
     if gets.chomp.downcase == "n"
       puts "","Please re-enter the student's details.",""
@@ -116,17 +117,46 @@ def input_students
 
     @students << {first_name: first_name, last_name: last_name, cohort: cohort, colour: colour}
 
-    puts "","Thank you, #{first_name} #{last_name} has been added to our student body. Villains' Academy is now #{@students.count} strong!","","Would you like to enter another student? [Y/N]"
+    @students.sort_by! { |student| student[:last_name] }
 
-    if gets.chomp.downcase == "n"
-      puts
-      break
-    end
+    puts "","Thank you, #{first_name} #{last_name} has been added to our student body. Villains' Academy is now #{@students.count} strong!"
+    break
+  end
+end
+
+def delete_students
+  puts
+
+  @students.each_with_index do |student, index|
+   puts "#{index + 1} #{student[:first_name]} #{student[:last_name]}"
+  end
+
+  puts "","What is the index number of the student you'd like to delete?"
+  selection = gets.chomp.to_i - 1
+
+  puts "","That's not a valid selection." if selection < 0 || selection > @students.length
+
+  to_be_deleted = @students[selection]
+
+  puts "","Are you sure you would like to delete student ##{selection + 1}, #{to_be_deleted[:first_name]} #{to_be_deleted[:last_name]}? [Y/N]"
+
+  case gets.chomp.downcase
+  when "y"
+    puts "","Student #{to_be_deleted[:first_name]} #{to_be_deleted[:last_name]} deleted."
+    @students.delete_at(selection)
+  when "n"
+    puts "","Student not deleted."
   end
 end
 
 def save_students
+  puts "Are you sure you want to overwrite your previous save? [Y/N]"
+  return if gets.chomp.downcase == "n"
+
   file = File.open("students.csv", "w")
+  file.truncate(0)
+
+  @students.sort_by! { |student| student[:last_name] }
 
   @students.each do |student|
     student_data = [student[:first_name], student[:last_name], student[:cohort], student[:colour]]
@@ -135,6 +165,34 @@ def save_students
   end
 
   file.close
+
+  puts "","Progress saved."
 end
 
+def reload_students
+  puts "Are you sure you want to revert to your previous save? All progress will be lost. [Y/N]"
+  return if gets.chomp.downcase == "n"
+
+  @students = []
+  load_students
+
+  puts "","Reloaded from previous save."
+end
+
+def exit_program
+  puts "","Would you like to save your work? [Y/N]"
+
+  case gets.chomp.downcase
+  when "y"
+    save_students
+    puts "","Goodbye!"
+    exit
+  when "n"
+    puts "","Goodbye!"
+    exit
+  end
+end
+
+load_students
+print_welcome
 interactive_menu
